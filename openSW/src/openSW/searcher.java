@@ -11,7 +11,6 @@ import org.snu.ids.kkma.index.Keyword;
 import org.snu.ids.kkma.index.KeywordExtractor;
 import org.snu.ids.kkma.index.KeywordList;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -37,10 +36,7 @@ public class searcher {
 			fs = new FileInputStream(objName);
 			os = new ObjectInputStream(fs);
 			readObj = (HashMap<String, List<Object>>) os.readObject();
-			similarity = new LinkedList<>();
-			for (int i = 0; i < docCnt; i++) {
-				similarity.add(0.0);
-			}
+			
 			this.docCnt = docCnt;
 			
 		} catch (IOException | ClassNotFoundException e) {
@@ -52,6 +48,12 @@ public class searcher {
 	
 	
 	public void CalcSim(String query) {
+		
+		similarity = new LinkedList<>();
+		for (int i = 0; i < docCnt; i++) {
+			similarity.add(0.0);
+		}
+		
 		calculateQuery(query);
 		showTitle();
 	}
@@ -90,6 +92,7 @@ public class searcher {
 		int targetIdx = 0;
 		int arrCnt = 0;
 		int[] targetDocIds = new int[3];
+		
 		for (int i = 0; i < 3; i++) {
 			target = 0.0;
 			targetIdx = -1;
@@ -131,7 +134,7 @@ public class searcher {
 			dBuilder = dbFactoty.newDocumentBuilder();
 			doc = dBuilder.parse(toReadXmlFile);
 			doc.getDocumentElement().normalize();
-			nl = doc.getElementsByTagName("doc");
+			nl = doc.getElementsByTagName("title");
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
@@ -140,20 +143,15 @@ public class searcher {
 	
 	private String searchTitle(int docId) {
 		Node targetNode = nl.item(docId);
-		Element targetElement = (Element) targetNode;
-		NodeList childList = targetElement.getChildNodes();
 		
-		for (int i = 0 ; i < childList.getLength(); i++) {
-			Node childNode = childList.item(i);
-			if (childNode.getNodeType() == Node.ELEMENT_NODE) {
-				if (childNode.getNodeName().equals("title")) {
-					return childNode.getTextContent();
-				}
-				
-			}
+		try {
+			String outTitle = targetNode.getTextContent();
+			return outTitle;
 		}
-		
-		return null;
+		catch (NullPointerException e) {
+			return null;
+		}
+				
 	}
 	
 	
