@@ -15,13 +15,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+
 public class searcher {
 	
 	private FileInputStream fs;
 	private ObjectInputStream os;
 	private HashMap<String, List<Object>> readObj;
 	private List<Double> similarity;
-	private List<Double> cosSimilarity;
+	private List<Double>[] docWeightList;
+	private double[] cosSimilarity;
+	private List<Double> totalKeyWeidht;
 	private int docCnt;
 	
 	private File toReadXmlFile;
@@ -49,13 +52,30 @@ public class searcher {
 
 
 	public void CalcSim(String query) {
-		cosSimilarity = new LinkedList<>();
+		
+		totalKeyWeidht = new LinkedList<>();
+		cosSimilarity = new double[docCnt];
+		docWeightList = new List[docCnt];
+		
 		for (int i = 0; i < docCnt; i++) {
-			similarity.add(0.0);
+			docWeightList[i] = new LinkedList<>();
 		}
 		
 		InnerProduct(query);
-		calcCosSimilarity(query);
+		setCosSimilarityDenominator(query);
+		
+		double absoluteA = 0.0;
+		for (double i : totalKeyWeidht) {
+			absoluteA += i;
+		}
+		
+		absoluteA = Math.sqrt(absoluteA);
+		calcCosSimilarity(absoluteA);
+
+		for (double i : cosSimilarity) {
+			System.out.println(i);
+		}
+		
 	}
 
 	
@@ -72,23 +92,36 @@ public class searcher {
 	}
 	
 	// 새로운 calcSim 
-	private void calcCosSimilarity(String query) {
+	private void calcCosSimilarity(double absoluteA) {
+		
+		for (int i = 0; i < docCnt; i++) {
+			double absoluteB = 0.0;
+			for (double j : docWeightList[i]) {
+				absoluteB += j;
+			}
+			System.out.println(absoluteB);
+			System.out.println("분자 : " + similarity.get(i));
+			System.out.println("분모 : " + (absoluteA * Math.sqrt(absoluteB)));
+			cosSimilarity[i] = similarity.get(i) / (absoluteA * Math.sqrt(absoluteB));
+		}
+		
+	}
+	
+	private void setCosSimilarityDenominator(String query) {
 		KeywordExtractor ke = new KeywordExtractor();
 		KeywordList kl = ke.extractKeyword(query, true);
 		
 		for (Keyword key : kl) {
 			String keyName = key.getString();
 			int keyWeight = key.getCnt();
+			totalKeyWeidht.add(Math.pow(keyWeight, 2));
 			
 			List<Object> readObjValue = readObj.get(keyName);
 			
 			try {
 				for (int i = 0; i < readObjValue.size() / 2; i = i + 2) {
-					int index = (int)readObjValue.get(i);
 					double docWeight = (double) readObjValue.get(i + 1); 
-					double tempValue = similarity.get(index);
-					
-					similarity.set(index, tempValue + (keyWeight * docWeight));
+					docWeightList[i].add(Math.pow(docWeight, 2));
 				}
 			}
 			catch (NullPointerException e) {
