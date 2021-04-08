@@ -57,7 +57,7 @@ public class searcher {
 
 	
 	
-	public void CalcSim(String query) {
+	public void InnerProduct(String query) {
 		
 		similarity = new LinkedList<>();
 		for (int i = 0; i < docCnt; i++) {
