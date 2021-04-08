@@ -21,6 +21,7 @@ public class searcher {
 	private ObjectInputStream os;
 	private HashMap<String, List<Object>> readObj;
 	private List<Double> similarity;
+	private List<Double> cosSimilarity;
 	private int docCnt;
 	
 	private File toReadXmlFile;
@@ -47,8 +48,14 @@ public class searcher {
 	}
 
 
-	public void CalcSim2(String query) {
+	public void CalcSim(String query) {
+		cosSimilarity = new LinkedList<>();
+		for (int i = 0; i < docCnt; i++) {
+			similarity.add(0.0);
+		}
 		
+		InnerProduct(query);
+		calcCosSimilarity(query);
 	}
 
 	
@@ -61,8 +68,35 @@ public class searcher {
 		}
 		
 		calculateQuery(query);
-		showTitle();
+//		showTitle();
 	}
+	
+	// 새로운 calcSim 
+	private void calcCosSimilarity(String query) {
+		KeywordExtractor ke = new KeywordExtractor();
+		KeywordList kl = ke.extractKeyword(query, true);
+		
+		for (Keyword key : kl) {
+			String keyName = key.getString();
+			int keyWeight = key.getCnt();
+			
+			List<Object> readObjValue = readObj.get(keyName);
+			
+			try {
+				for (int i = 0; i < readObjValue.size() / 2; i = i + 2) {
+					int index = (int)readObjValue.get(i);
+					double docWeight = (double) readObjValue.get(i + 1); 
+					double tempValue = similarity.get(index);
+					
+					similarity.set(index, tempValue + (keyWeight * docWeight));
+				}
+			}
+			catch (NullPointerException e) {
+				continue;
+			}
+		}
+	}
+	//
 	
 	
 	private void calculateQuery(String query) {
