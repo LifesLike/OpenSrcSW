@@ -72,9 +72,7 @@ public class searcher {
 		absoluteA = Math.sqrt(absoluteA);
 		calcCosSimilarity(absoluteA);
 
-		for (double i : cosSimilarity) {
-			System.out.println(i);
-		}
+		showTitle();
 		
 	}
 
@@ -99,10 +97,11 @@ public class searcher {
 			for (double j : docWeightList[i]) {
 				absoluteB += j;
 			}
-			System.out.println(absoluteB);
-			System.out.println("분자 : " + similarity.get(i));
-			System.out.println("분모 : " + (absoluteA * Math.sqrt(absoluteB)));
+
 			cosSimilarity[i] = similarity.get(i) / (absoluteA * Math.sqrt(absoluteB));
+			if (Double.isNaN(cosSimilarity[i])) {
+				cosSimilarity[i] = 0.0;
+			}
 		}
 		
 	}
@@ -121,7 +120,7 @@ public class searcher {
 			try {
 				for (int i = 0; i < readObjValue.size() / 2; i = i + 2) {
 					double docWeight = (double) readObjValue.get(i + 1); 
-					docWeightList[i].add(Math.pow(docWeight, 2));
+					docWeightList[(int) readObjValue.get(i)].add(Math.pow(docWeight, 2));
 				}
 			}
 			catch (NullPointerException e) {
