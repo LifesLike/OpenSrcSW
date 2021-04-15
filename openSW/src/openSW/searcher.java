@@ -23,7 +23,8 @@ public class searcher {
 	private HashMap<String, List<Object>> readObj;
 	private List<Double> similarity;
 	private List<Double>[] docWeightList;
-	private double[] cosSimilarity;
+	private List<Double> cosSimilarity;
+//	private double[] cosSimilarity;
 	private List<Double> totalKeyWeidht;
 	private int docCnt;
 	
@@ -54,8 +55,13 @@ public class searcher {
 	public void CalcSim(String query) {
 		
 		totalKeyWeidht = new LinkedList<>();
-		cosSimilarity = new double[docCnt];
+		cosSimilarity = new LinkedList<>();
+//		cosSimilarity = new double[docCnt];
 		docWeightList = new List[docCnt];
+		
+		for (int i = 0; i < docCnt; i++) {
+			cosSimilarity.add(0.0);
+		}
 		
 		for (int i = 0; i < docCnt; i++) {
 			docWeightList[i] = new LinkedList<>();
@@ -72,7 +78,7 @@ public class searcher {
 		absoluteA = Math.sqrt(absoluteA);
 		calcCosSimilarity(absoluteA);
 
-		showTitle();
+		showTitle(cosSimilarity);
 		
 	}
 
@@ -98,10 +104,11 @@ public class searcher {
 				absoluteB += j;
 			}
 
-			cosSimilarity[i] = similarity.get(i) / (absoluteA * Math.sqrt(absoluteB));
-			if (Double.isNaN(cosSimilarity[i])) {
-				cosSimilarity[i] = 0.0;
+			cosSimilarity.set(i, similarity.get(i) / (absoluteA * Math.sqrt(absoluteB)));
+			if (Double.isNaN(cosSimilarity.get(i))) {
+				cosSimilarity.set(i, 0.0);
 			}
+
 		}
 		
 	}
@@ -159,7 +166,7 @@ public class searcher {
 		
 	}
 	
-	private void showTitle() {
+	private void showTitle(List<Double> simList) {
 		double target = 0.0;
 		int targetIdx = 0;
 		int arrCnt = 0;
@@ -169,7 +176,7 @@ public class searcher {
 			target = 0.0;
 			targetIdx = -1;
 			for (int j = 0; j < docCnt; j++) {
-				if (similarity.get(j) > target) {
+				if (simList.get(j) > target) {
 					boolean isIn = false;
 					for (int k = 0; k < arrCnt; k++) {
 						if (targetDocIds[k] == j) {
@@ -179,7 +186,7 @@ public class searcher {
 					}
 
 					if (!isIn) {
-						target = similarity.get(j);
+						target = simList.get(j);
 						targetIdx = j;
 					}
 					
@@ -224,6 +231,12 @@ public class searcher {
 			return null;
 		}
 				
+	}
+	
+	public void showCosSim() {
+		for (Double i : cosSimilarity) {
+			System.out.println("코사인 유사도: " + i);
+		}
 	}
 	
 	
