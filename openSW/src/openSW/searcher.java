@@ -24,7 +24,6 @@ public class searcher {
 	private List<Double> similarity;
 	private List<Double>[] docWeightList;
 	private List<Double> cosSimilarity;
-//	private double[] cosSimilarity;
 	private List<Double> totalKeyWeidht;
 	private int docCnt;
 	
@@ -56,7 +55,6 @@ public class searcher {
 		
 		totalKeyWeidht = new LinkedList<>();
 		cosSimilarity = new LinkedList<>();
-//		cosSimilarity = new double[docCnt];
 		docWeightList = new List[docCnt];
 		
 		for (int i = 0; i < docCnt; i++) {
@@ -76,6 +74,8 @@ public class searcher {
 		}
 		
 		absoluteA = Math.sqrt(absoluteA);
+		absoluteA = Math.round(absoluteA*100) / 100.0;
+		
 		calcCosSimilarity(absoluteA);
 
 		showTitle(cosSimilarity);
@@ -104,10 +104,15 @@ public class searcher {
 				absoluteB += j;
 			}
 
-			cosSimilarity.set(i, similarity.get(i) / (absoluteA * Math.sqrt(absoluteB)));
-			if (Double.isNaN(cosSimilarity.get(i))) {
+			if (absoluteB == 0.0) {
 				cosSimilarity.set(i, 0.0);
 			}
+			else {
+				double value = similarity.get(i) / (absoluteA * Math.sqrt(absoluteB));
+				value = Math.round(value*100) / 100.0;
+				cosSimilarity.set(i, value);
+			}
+			
 
 		}
 		
@@ -135,7 +140,7 @@ public class searcher {
 			}
 		}
 	}
-	//
+	
 	
 	
 	private void calculateQuery(String query) {
@@ -233,12 +238,7 @@ public class searcher {
 				
 	}
 	
-	public void showCosSim() {
-		for (Double i : cosSimilarity) {
-			System.out.println("코사인 유사도: " + i);
-		}
-	}
-	
+
 	
 
 }
